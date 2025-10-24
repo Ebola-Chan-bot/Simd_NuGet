@@ -220,6 +220,7 @@ namespace Simd
             const AlgParam& a = _alg;
             buf8 = Buffer(buf8);
             int16_t* buf = Allocate<int16_t>(buf8, a.bufR * a.bufH);
+            float dNorm = 1.0f / _dstScale;
             if (_srcZero.size != a.bufR)
             {
                 uint8_t zero = _srcZero[0];
@@ -232,7 +233,7 @@ namespace Simd
                 {
                     size_t yEnd = Simd::Min(yBeg + a.stepH, p.dstH);
                     _preprocess(src, _srcZero.data, p, a, yBeg, yEnd, buf);
-                    _convolution(buf, p, a, _weight16i.data, _bias.data, _norm.data, yBeg, yEnd, _dstZero, dst);
+                    _convolution(buf, p, a, yBeg, yEnd, _weight16i.data, _bias.data, _norm.data, _intZero, _intScale, _params.data, dNorm, _dstZero, dst);
                     yBeg = yEnd;
                 }
                 src += _sizeS * _elemS;
@@ -320,8 +321,7 @@ namespace Simd
         {
             return p.trans != 0 && p.IsDepthwise() && p.IsDilation(1) && p.group >= F 
                 && (p.IsStride(1) || p.IsStride(2))
-                && (p.IsKernel(3) || p.IsKernel(5) || p.IsKernel(7))
-                && p.activation == SimdConvolutionActivationIdentity;
+                && (p.IsKernel(3) || p.IsKernel(5) || p.IsKernel(7));
         }
 
         //------------------------------------------------------------------------------------------------
@@ -356,6 +356,7 @@ namespace Simd
             const AlgParam& a = _alg;
             buf8 = Buffer(buf8);
             uint8_t* buf = Allocate<uint8_t>(buf8, a.bufR * a.bufH * 2);
+            float dNorm = 1.0f / _dstScale;
             if (_srcZero.size != a.bufR)
             {
                 uint8_t zero = _srcZero[0];
@@ -368,7 +369,7 @@ namespace Simd
                 {
                     size_t yEnd = Simd::Min(yBeg + a.stepH, p.dstH);
                     _preprocess(src, _srcZero.data, p, a, yBeg, yEnd, buf);
-                    _convolution(buf, p, a, _weight.data, _bias.data, _norm.data, yBeg, yEnd, _dstZero, dst);
+                    _convolution(buf, p, a, yBeg, yEnd, _weight.data, _bias.data, _norm.data, _intZero, _intScale, _params.data, dNorm, _dstZero, dst);
                     yBeg = yEnd;
                 }
                 src += _sizeS * _elemS;
@@ -472,8 +473,7 @@ namespace Simd
         {
             return p.trans != 0 && p.IsDepthwise() && p.IsDilation(1) && p.group >= F
                 && (p.IsStride(1) || p.IsStride(2))
-                && (p.IsKernel(3) || p.IsKernel(5) || p.IsKernel(7))
-                && p.activation == SimdConvolutionActivationIdentity;
+                && (p.IsKernel(3) || p.IsKernel(5) || p.IsKernel(7));
         }
      }
 #endif
