@@ -1,4 +1,5 @@
 /build
 /prj/txt/FullVersion.txt
 /src/Simd/SimdVersion.h
-/prj/vs2022/.vs/Simd
+/prj/vs2022/.vs
+bin
